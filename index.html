@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="/node_modules/hot-formula-parser/dist/formula-parser.min.js"></script>
+    <title>Formula parser</title>
+  </head>
+  <body>
+    <div class="container">
+    	<h1>Formula parser</h1>
+    	<div class="alert alert-info" role="alert">
+		  Use MY_COMPONENT_TYPE_1, MY_COMPONENT_TYPE_2, MY_COMPONENT_TYPE_3 as component types to check validation
+		</div>
+    	<form>
+		  <div class="form-group">
+		    <textarea id="formula" class="form-control is-valid">MIN(MAX(2, MY_COMPONENT_TYPE_2), MY_COMPONENT_TYPE_1 * 3)</textarea>
+		  </div>
+		</form>
+	</div>
+
+	<script type="text/javascript">
+		var parser = new formulaParser.Parser();
+		var formulas = formulaParser.SUPPORTED_FORMULAS;
+
+		for (let formula of formulas) {
+			parser.setFunction(formula, () => {
+				throw new Error('Function is not supported')
+			});
+		}
+		
+		parser.setVariable('MY_COMPONENT_TYPE_1', 1);
+		parser.setVariable('MY_COMPONENT_TYPE_2', 1);
+		parser.setVariable('MY_COMPONENT_TYPE_3', 1);
+		parser.setFunction('MIN', function(params) {
+			if (params.length != 2) {
+				throw new Error('Wrong number of params')
+			}
+			return params[0] < params[1] ? params[0] : params[1];
+		});
+		parser.setFunction('MAX', function(params) {
+			if (params.length != 2) {
+				throw new Error('Wrong number of params')
+			}
+			return params[0] > params[1] ? params[0] : params[1];
+		});
+
+		document.getElementById('formula').addEventListener('input', (event) => {
+			var target = event.target;
+			target.className = 'form-control ' + (parser.parse(target.value).error ? 'is-invalid' : 'is-valid');
+		});
+    </script>
+  </body>
+</html>
